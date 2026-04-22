@@ -1,3 +1,4 @@
+#include "Calibration.h"
 #include "JoyConDevice.h"
 #include "Spi.h"
 #include "../jctool/jctool.h"   // temporary dependency, will be removed later
@@ -27,18 +28,14 @@ StickCalibration JoyConDevice::getLeftCalibration() {
     uint8_t buf[22] = {};
     jc_get_spi_data(0x8010, sizeof(buf), buf);
 
-    StickCalibration cal{};
-    // TODO: decode using jc_decode_stick_params()
-    return cal;
+    return jc_parse_stick_calibration(buf);
 }
 
 StickCalibration JoyConDevice::getRightCalibration() {
     uint8_t buf[22] = {};
     jc_get_spi_data(0x801B, sizeof(buf), buf);
 
-    StickCalibration cal{};
-    // TODO: decode using jc_decode_stick_params()
-    return cal;
+    return jc_parse_stick_calibration(buf);
 }
 
 StickState JoyConDevice::getLeftStick() {
