@@ -13,3 +13,13 @@ RawStick decode_raw_stick(const uint8_t* data) {
 
     return s;
 }
+
+#include <algorithm>
+
+float normalize_axis(int raw, int min, int center, int max) {
+    if (raw > center) {
+        return float(raw - center) / float(max - center);
+    } else {
+        return float(raw - center) / float(center - min);
+    }
+}
