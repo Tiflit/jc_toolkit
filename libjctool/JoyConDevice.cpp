@@ -4,6 +4,11 @@
 #include "StickUtils.h"
 #include "../jctool/jctool.h"   // temporary dependency, will be removed later
 
+// If your project exposes the HID handle, declare it here.
+// Adjust this extern to match your actual definition.
+#include <hidapi/hidapi.h>
+extern hid_device* handle;
+
 JoyConDevice::JoyConDevice() {
 }
 
@@ -23,7 +28,7 @@ bool JoyConDevice::connect() {
 }
 
 void JoyConDevice::disconnect() {
-    // TODO: close HID handle properly once extracted
+    // TODO: close HID handle properly once extracted from legacy code
 }
 
 bool JoyConDevice::isConnected() const {
@@ -42,10 +47,20 @@ StickCalibration JoyConDevice::getRightCalibration() {
     return jc_parse_stick_calibration(buf);
 }
 
+bool JoyConDevice::readInputReport(uint8_t* outReport, int timeoutMs) {
+    if (!handle) {
+        return false;
+    }
+
+    int res = hid_read_timeout(handle, outReport, 64, timeoutMs);
+    return res > 0;
+}
+
 StickState JoyConDevice::computeStick(const StickCalibration& cal,
                                       uint16_t rawX,
                                       uint16_t rawY) const {
     StickState s{};
+
     if (!calLoaded) {
         s.x = 0.0f;
         s.y = 0.0f;
@@ -64,24 +79,23 @@ StickState JoyConDevice::computeStick(const StickCalibration& cal,
 }
 
 StickState JoyConDevice::getLeftStick() {
-    StickState s{};
-
-    // TODO: replace this with real HID input report reading.
-    // For now, this is just a placeholder to show how normalization is applied.
     uint8_t report[64] = {};
-    // Example: assume left stick data starts at offset 6 in a 0x30 report.
-    RawStick raw = decode_raw_stick(&report[6]);
+    if (!readInputReport(report)) {
+        return StickState{0.0f, 0.0f};
+    }
 
+    // Left stick raw data starts at offset 6 in report 0x30
+    RawStick raw = decode_raw_stick(&report[6]);
     return computeStick(leftCal, raw.x, raw.y);
 }
 
 StickState JoyConDevice::getRightStick() {
-    StickState s{};
-
-    // TODO: replace this with real HID input report reading.
     uint8_t report[64] = {};
-    // Example: assume right stick data starts at offset 9 in a 0x30 report.
-    RawStick raw = decode_raw_stick(&report[9]);
+    if (!readInputReport(report)) {
+        return StickState{0.0f, 0.0f};
+    }
 
+    // Right stick raw data starts at offset 9 in report 0x30
+    RawStick raw = decode_raw_stick(&report[9]);
     return computeStick(rightCal, raw.x, raw.y);
 }
