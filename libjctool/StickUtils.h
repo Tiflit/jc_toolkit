@@ -8,3 +8,5 @@ struct RawStick {
 
 // Decode 12-bit packed stick data from HID report
 RawStick decode_raw_stick(const uint8_t* data);
+
+float normalize_axis(int raw, int min, int center, int max);
