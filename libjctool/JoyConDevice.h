@@ -35,4 +35,6 @@ private:
     StickState computeStick(const StickCalibration& cal,
                             uint16_t rawX,
                             uint16_t rawY) const;
+
+    bool readInputReport(uint8_t* outReport, int timeoutMs = 5);
 };
