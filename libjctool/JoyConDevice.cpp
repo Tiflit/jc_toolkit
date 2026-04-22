@@ -11,9 +11,14 @@ JoyConDevice::~JoyConDevice() {
 }
 
 bool JoyConDevice::connect() {
-    // Temporary: reuse the old device_connection() function
     int res = device_connection();
-    return (res == 0);
+    if (res == 0) {
+        leftCal = getLeftCalibration();
+        rightCal = getRightCalibration();
+        calLoaded = true;
+        return true;
+    }
+    return false;
 }
 
 void JoyConDevice::disconnect() {
@@ -27,14 +32,12 @@ bool JoyConDevice::isConnected() const {
 StickCalibration JoyConDevice::getLeftCalibration() {
     uint8_t buf[22] = {};
     jc_get_spi_data(0x8010, sizeof(buf), buf);
-
     return jc_parse_stick_calibration(buf);
 }
 
 StickCalibration JoyConDevice::getRightCalibration() {
     uint8_t buf[22] = {};
     jc_get_spi_data(0x801B, sizeof(buf), buf);
-
     return jc_parse_stick_calibration(buf);
 }
 
