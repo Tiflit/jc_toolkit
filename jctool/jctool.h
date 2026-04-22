@@ -1,18 +1,18 @@
-#include "../libjctool/JoyConProtocol.h"
-
 #pragma once
 
+#include "../libjctool/JoyConProtocol.h"
 #include <cstdint>
 
-template <typename T> T CLAMP(const T& value, const T& low, const T& high)
+template <typename T>
+T CLAMP(const T& value, const T& low, const T& high)
 {
     return value < low ? low : (value > high ? high : value);
 }
 
 #pragma pack(push, 1)
-
 #pragma pack(pop)
 
+// Function declarations (unchanged)
 extern s16 uint16_to_int16(u16 a);
 extern void decode_stick_params(u16 *decoded_stick_params, u8 *encoded_stick_params);
 extern void encode_stick_params(u8 *encoded_stick_params, u16 *decoded_stick_params);
@@ -35,16 +35,6 @@ extern int ir_sensor(ir_image_config &ir_cfg);
 extern int ir_sensor_config_live(ir_image_config &ir_cfg);
 extern int nfc_tag_info();
 extern int silence_input_report();
-int  handle_ok;
-bool enable_button_test;
-bool enable_IRVideoPhoto;
-bool enable_IRAutoExposure;
-bool enable_NFCScanning;
-bool cancel_spi_dump;
-bool check_connection_ok;
-
-u8 timming_byte;
-u8 ir_max_frag_no;
 
 namespace CppWinFormJoy {
     class images
