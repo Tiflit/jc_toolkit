@@ -1,6 +1,7 @@
 #include "Calibration.h"
 #include "JoyConDevice.h"
-#include "Spi.h"
+#include "spi.h"
+#include "StickUtils.h"
 #include "../jctool/jctool.h"   // temporary dependency, will be removed later
 
 JoyConDevice::JoyConDevice() {
