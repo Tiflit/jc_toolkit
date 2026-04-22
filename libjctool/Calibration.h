@@ -1,14 +1,26 @@
 #pragma once
 #include <cstdint>
-#include "JoyConProtocol.h"
+#include "Types.h"
 
-struct StickCalibration {
-    int16_t minX, centerX, maxX;
-    int16_t minY, centerY, maxY;
-};
-
-// Decode the 12-bit packed stick parameters
-void jc_decode_stick_params(uint16_t* decoded, const uint8_t* encoded);
-
-// Parse a 22-byte SPI calibration block into StickCalibration
+// ---------------------------------------------------------------------------
+// Parse the 9-byte SPI calibration block for one stick into a
+// StickCalibration with absolute min/center/max values.
+//
+// The SPI block encodes six 12-bit values in order:
+//   [0] max X above center (positive offset)
+//   [1] max Y above center (positive offset)
+//   [2] center X
+//   [3] center Y
+//   [4] max X below center (positive offset, subtracted from center)
+//   [5] max Y below center (positive offset, subtracted from center)
+//
+// spi_block must point to at least 9 bytes.
+// ---------------------------------------------------------------------------
 StickCalibration jc_parse_stick_calibration(const uint8_t* spi_block);
+
+// ---------------------------------------------------------------------------
+// Build the 9-byte SPI block from an absolute StickCalibration.
+// encoded must point to at least 9 bytes.
+// ---------------------------------------------------------------------------
+void jc_encode_stick_calibration(uint8_t* encoded,
+                                 const StickCalibration& cal);

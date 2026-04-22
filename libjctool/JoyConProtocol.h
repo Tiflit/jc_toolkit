@@ -1,7 +1,9 @@
 #pragma once
 #include <cstdint>
 
-// Basic typedefs used everywhere
+// ---------------------------------------------------------------------------
+// Convenience integer typedefs matching the original jctool convention.
+// ---------------------------------------------------------------------------
 typedef uint8_t  u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
@@ -13,7 +15,10 @@ typedef int64_t  s64;
 
 #pragma pack(push, 1)
 
-// HID packet header
+// ---------------------------------------------------------------------------
+// HID output report header (cmd 0x01 / 0x10).
+// timer increments with every packet sent (wraps at 0xF).
+// ---------------------------------------------------------------------------
 struct brcm_hdr {
     u8 cmd;
     u8 timer;
@@ -21,13 +26,15 @@ struct brcm_hdr {
     u8 rumble_r[4];
 };
 
-// Subcommand payload structure
+// ---------------------------------------------------------------------------
+// Subcommand payload that follows brcm_hdr.
+// ---------------------------------------------------------------------------
 struct brcm_cmd_01 {
     u8 subcmd;
     union {
         struct {
             u32 offset;
-            u8 size;
+            u8  size;
         } spi_data;
 
         struct {
@@ -36,33 +43,24 @@ struct brcm_cmd_01 {
         } subcmd_arg;
 
         struct {
-            u8  mcu_cmd;
-            u8  mcu_subcmd;
-            u8  mcu_mode;
+            u8 mcu_cmd;
+            u8 mcu_subcmd;
+            u8 mcu_mode;
         } subcmd_21_21;
 
         struct {
             u8  mcu_cmd;
             u8  mcu_subcmd;
             u8  no_of_reg;
-            u16 reg1_addr;
-            u8  reg1_val;
-            u16 reg2_addr;
-            u8  reg2_val;
-            u16 reg3_addr;
-            u8  reg3_val;
-            u16 reg4_addr;
-            u8  reg4_val;
-            u16 reg5_addr;
-            u8  reg5_val;
-            u16 reg6_addr;
-            u8  reg6_val;
-            u16 reg7_addr;
-            u8  reg7_val;
-            u16 reg8_addr;
-            u8  reg8_val;
-            u16 reg9_addr;
-            u8  reg9_val;
+            u16 reg1_addr;  u8 reg1_val;
+            u16 reg2_addr;  u8 reg2_val;
+            u16 reg3_addr;  u8 reg3_val;
+            u16 reg4_addr;  u8 reg4_val;
+            u16 reg5_addr;  u8 reg5_val;
+            u16 reg6_addr;  u8 reg6_val;
+            u16 reg7_addr;  u8 reg7_val;
+            u16 reg8_addr;  u8 reg8_val;
+            u16 reg9_addr;  u8 reg9_val;
         } subcmd_21_23_04;
 
         struct {
@@ -76,7 +74,9 @@ struct brcm_cmd_01 {
     };
 };
 
-// IR configuration struct
+// ---------------------------------------------------------------------------
+// IR camera configuration.
+// ---------------------------------------------------------------------------
 struct ir_image_config {
     u8  ir_res_reg;
     u16 ir_exposure;
