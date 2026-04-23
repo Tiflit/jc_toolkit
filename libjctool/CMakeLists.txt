@@ -6,7 +6,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # ---------------------------------------------------------------------------
 # hidapi dependency
-# Try the system package first; fall back to FetchContent if not found.
 # ---------------------------------------------------------------------------
 find_package(hidapi QUIET)
 
@@ -44,28 +43,34 @@ target_include_directories(jctool
 )
 
 # ---------------------------------------------------------------------------
-# Link hidapi and import its include directories
+# Link hidapi (support all known target names)
 # ---------------------------------------------------------------------------
 
-# Link the correct hidapi target depending on platform / FetchContent
-if (TARGET hidapi::hidapi)
-    target_link_libraries(jctool PUBLIC hidapi::hidapi)
-elseif (TARGET hidapi-win32)
-    target_link_libraries(jctool PUBLIC hidapi-win32)
-elseif (TARGET hidapi)
-    target_link_libraries(jctool PUBLIC hidapi)
-endif()
+set(HIDAPI_TARGET "")
 
-# Pull hidapi include dirs from whichever target was linked
-# This fixes: "Cannot open include file: 'hidapi/hidapi.h'"
-foreach(HID_TARGET hidapi::hidapi hidapi-win32 hidapi)
-    if (TARGET ${HID_TARGET})
-        get_target_property(HID_INCLUDES ${HID_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
-        if (HID_INCLUDES)
-            target_include_directories(jctool PUBLIC ${HID_INCLUDES})
-        endif()
+foreach(candidate
+    hidapi::hidapi
+    hidapi::hidapi_winapi
+    hidapi-win32
+    hidapi
+)
+    if(TARGET ${candidate})
+        set(HIDAPI_TARGET ${candidate})
+        break()
     endif()
 endforeach()
+
+if(NOT HIDAPI_TARGET)
+    message(FATAL_ERROR "Could not find a valid hidapi target")
+endif()
+
+target_link_libraries(jctool PUBLIC ${HIDAPI_TARGET})
+
+# Import hidapi include dirs
+get_target_property(HID_INCLUDES ${HIDAPI_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
+if(HID_INCLUDES)
+    target_include_directories(jctool PUBLIC ${HID_INCLUDES})
+endif()
 
 # ---------------------------------------------------------------------------
 # Compiler warnings
