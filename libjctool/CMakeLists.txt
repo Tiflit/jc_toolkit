@@ -43,15 +43,29 @@ target_include_directories(jctool
         $<INSTALL_INTERFACE:include/jctool>
 )
 
-# Link hidapi — the target name differs between system packages and
-# FetchContent builds; try both common names.
-if(TARGET hidapi::hidapi)
+# ---------------------------------------------------------------------------
+# Link hidapi and import its include directories
+# ---------------------------------------------------------------------------
+
+# Link the correct hidapi target depending on platform / FetchContent
+if (TARGET hidapi::hidapi)
     target_link_libraries(jctool PUBLIC hidapi::hidapi)
-elseif(TARGET hidapi-win32)
+elseif (TARGET hidapi-win32)
     target_link_libraries(jctool PUBLIC hidapi-win32)
-else()
+elseif (TARGET hidapi)
     target_link_libraries(jctool PUBLIC hidapi)
 endif()
+
+# Pull hidapi include dirs from whichever target was linked
+# This fixes: "Cannot open include file: 'hidapi/hidapi.h'"
+foreach(HID_TARGET hidapi::hidapi hidapi-win32 hidapi)
+    if (TARGET ${HID_TARGET})
+        get_target_property(HID_INCLUDES ${HID_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
+        if (HID_INCLUDES)
+            target_include_directories(jctool PUBLIC ${HID_INCLUDES})
+        endif()
+    endif()
+endforeach()
 
 # ---------------------------------------------------------------------------
 # Compiler warnings
@@ -63,13 +77,13 @@ else()
 endif()
 
 # ---------------------------------------------------------------------------
-# Optional: install rules (useful once you want to consume this from
-# a separate GUI or CLI project via find_package).
+# Install rules
 # ---------------------------------------------------------------------------
 install(TARGETS jctool
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
 )
+
 install(FILES
     Calibration.h
     JoyConDevice.h
